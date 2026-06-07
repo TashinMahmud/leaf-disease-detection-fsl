@@ -1,92 +1,72 @@
-# 🌿 Leaf Disease Detection using Few-Shot Learning
+# 🌿 Plant Leaf Disease Detection via Episodic Few-Shot Learning
 
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![EfficientNet](https://img.shields.io/badge/EfficientNet-Google-blue?style=for-the-badge&logo=google)](https://github.com/lukemelas/EfficientNet-PyTorch)
-[![Few Shot Learning](https://img.shields.io/badge/FSL-Prototypical%20Networks-green?style=for-the-badge&logo=wikipedia)](https://en.wikipedia.org/wiki/Few-shot_learning)
+<div align="center">
 
-A research-driven deep learning system built to detect plant leaf diseases using **Few-Shot Learning (FSL)**. This repository implements **Prototypical Networks (ProtoNets)**, enabling plant leaf disease classification with extremely minimal training examples. This approach addresses real-world agricultural scenarios where labeled dataset availability is scarce.
-
-* **Few-Shot Architecture**: Implements 5-Way 5-Shot classification configurations using episodic task sampler strategies.
-* **Dual Backbones**: Integrated with both ResNet18 and EfficientNet neural networks.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Few-Shot Learning](https://img.shields.io/badge/FSL-Prototypical--Networks-2B5B2E?style=flat)](#mathematical-background)
 
 ---
 
-## 🏗️ ProtoNet Model Pipeline
+An agricultural deep learning system that utilizes metric-based **Few-Shot Learning (FSL)** to classify leaf diseases from extremely scarce data volumes. Built on top of **Prototypical Networks (ProtoNets)**, the system is designed to classify plant anomalies using only 5 reference images (5-Shot) per crop type.
 
-The prototypical network maps support and query sets into a shared embedding space to perform metric-based classification.
-
-```
-                      [ Plant Leaf Image ]
-                               │
-               [ Backbone (ResNet18 / EfficientNet) ]
-                               │
-              [ Prototypes Computation (Support Set) ]
-                               │
-             [ Distance Metric (Euclidean Distance) ]
-                               │
-                  [ Query Class Assignment ]
-```
-
-### Episodic Training Setup
-1. **Support Set**: A few sample images (5-shot) per class (5-way) used to compute the mean prototype representation of each class.
-2. **Query Set**: Target leaf images classified based on the minimum Euclidean distance to class prototypes.
+</div>
 
 ---
 
-## ⚡ Tech Stack & Core Libraries
+## 📈 Notebooks & Google Colab Demos
 
-* **Few-Shot Framework**: [easyfsl](https://github.com/sicara/easy-few-shot-learning) — PyTorch library for few-shot learning research.
-* **Deep Learning Engine**: PyTorch & Torchvision.
-* **Feature Extractors**: EfficientNet (efficientnet-pytorch) & ResNet18.
-* **Data Preprocessing**: PIL, Scikit-Learn, Pandas, NumPy.
-* **Visualization**: Matplotlib, Seaborn, Tqdm.
+We provide distinct training files for the **ResNet18** and **EfficientNet** feature-extraction backbones, tuned for both the full and trimmed versions of the PlantVillage dataset. Run them directly in your browser:
 
----
-
-## 📊 Dataset Configurations
-
-### PlantVillage Dataset
-Features leaf images categorized under multiple crop species (healthy and diseased states):
-* **Training Set (Background)**: Apple, Corn, Grape, Potato, Strawberry, Tomato (healthy and common diseases).
-* **Evaluation Set**: Blueberry, Cherry, Orange (Citrus greening), Pepper, Peach, Raspberry, Soybean, Squash.
-
-### Trimmed Dataset (PlantVillage-Trim-100)
-A specialized dataset subset created for rapid verification cycles:
-* **Background Set**: 2,700 images (400 per major crop class).
-* **Evaluation Set**: 1,200 images (100–200 per evaluation class).
+| Backbone Model | Dataset Type | Colab Launch Link |
+| :--- | :--- | :--- |
+| **EfficientNet** | Full PlantVillage | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/TashinMahmud/leaf-disease-detection-fsl/blob/master/Prototypical-Network/PV-PN-efficientnet-5x5.ipynb) |
+| **EfficientNet** | Trimmed (100 imgs) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/TashinMahmud/leaf-disease-detection-fsl/blob/master/Prototypical-Network/PV-Trim-PN-efficientnet-5x5.ipynb) |
+| **ResNet18** | Full PlantVillage | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/TashinMahmud/leaf-disease-detection-fsl/blob/master/Prototypical-Network/PV-PN-resnet18-5x5.ipynb) |
+| **ResNet18** | Trimmed (100 imgs) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/TashinMahmud/leaf-disease-detection-fsl/blob/master/Prototypical-Network/PV-Trim-PN-resnet18-5x5.ipynb) |
 
 ---
 
-## 🚀 Quick Start Guide
+## 🔬 Mathematical Background
 
-### 1. Installation
-Install all training and modeling dependencies:
+Prototypical Networks map samples from support sets ($S$) and query sets ($Q$) into a shared embedding space using a convolutional neural network feature extractor $f_\theta$.
+
+### 1. Prototype Computation
+For each class $k \in K$, we calculate a prototype vector $c_k$ representing the mean vector of the embedded support points belonging to that class:
+$$c_k = \frac{1}{|S_k|} \sum_{(x_i, y_i) \in S_k} f_\theta(x_i)$$
+
+### 2. Distance Classification
+Query images $x$ are classified by performing a softmax over the negative distance to the computed prototypes. The probability distribution is defined by:
+$$p_\theta(y = k \mid x) = \frac{\exp(-d(f_\theta(x), c_k))}{\sum_{k'} \exp(-d(f_\theta(x), c_{k'}))}$$
+*Where $d(\cdot, \cdot)$ is the squared Euclidean distance.*
+
+---
+
+## 📂 Research Documentation & Slides
+
+Literature reviews, thesis reports, and presentations are organized inside the project:
+
+*   **[`report/CSE_299_Grp_4_Report.pdf`](report/CSE_299_Grp_4_Report.pdf)**: Complete research paper describing empirical results and loss convergence benchmarks.
+*   **[`references/Prototypical Networks for Few-shot Learning.pptx`](references/Prototypical%20Networks%20for%20Few-shot%20Learning.pptx)**: Slides summarizing the ProtoNet model paper.
+*   **[`references/omniglot_train_5_way_1shot_main.pdf`](references/omniglot_train_5_way_1shot_main.pdf)**: Reference implementation notes for Omniglot classification.
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Prerequisites
+Install all dependencies for running the training tasks:
 ```bash
-pip install easyfsl scikit-learn efficientnet_pytorch torch torchvision matplotlib pandas tqdm pillow
+pip install easyfsl scikit-learn efficientnet_pytorch torch torchvision matplotlib pandas tqdm pillow jupyter
 ```
 
-### 2. Model Training Configurations
-
-#### EfficientNet Backbone
-Run the respective Jupyter notebooks for training models with EfficientNet feature extractors:
+### 2. Run Notebooks locally
+To start training and evaluations:
 ```bash
-# Full PlantVillage dataset
-jupyter notebook PV-PN-efficientnet-5x5.ipynb
-
-# Trimmed dataset
-jupyter notebook PV-Trim-PN-efficientnet-5x5.ipynb
+cd Prototypical-Network/
+jupyter notebook
 ```
-
-#### ResNet18 Backbone
-Run the respective notebooks for ResNet18 backbones:
-```bash
-# Full PlantVillage dataset
-jupyter notebook PV-PN-resnet18-5x5.ipynb
-
-# Trimmed dataset
-jupyter notebook PV-Trim-PN-resnet18-5x5.ipynb
-```
+Open any of the `.ipynb` files to review the training epochs.
 
 ---
 
@@ -94,25 +74,19 @@ jupyter notebook PV-Trim-PN-resnet18-5x5.ipynb
 
 ```
 leaf-disease-detection-fsl/
-├── data/                                      # Full and trimmed datasets
-├── model-saves/                               # Output weights and training checkpoints
-│   ├── EfficientNet/                          # EfficientNet run checkpoints
-│   └── ResNET18/                              # ResNet18 run checkpoints
-├── report/                                    # Thesis documentation, flowcharts, resource assets
-├── Prototypical-Network/                      # Source code scripts for network models
-├── PV-PN-efficientnet-5x5.ipynb               # EfficientNet notebook (full data)
-├── PV-Trim-PN-efficientnet-5x5.ipynb          # EfficientNet notebook (trimmed data)
-├── PV-PN-resnet18-5x5.ipynb                   # ResNet18 notebook (full data)
-├── PV-Trim-PN-resnet18-5x5.ipynb              # ResNet18 notebook (trimmed data)
-└── README.md                                  # Project documentation
+├── data/                                  # PlantVillage crop images datasets
+├── Prototypical-Network/                  # Jupyter notebooks for training models
+│   ├── PV-PN-efficientnet-5x5.ipynb       # EfficientNet model (Full)
+│   ├── PV-Trim-PN-efficientnet-5x5.ipynb  # EfficientNet model (Trimmed)
+│   ├── PV-PN-resnet18-5x5.ipynb           # ResNet18 model (Full)
+│   └── PV-Trim-PN-resnet18-5x5.ipynb      # ResNet18 model (Trimmed)
+├── report/                                # Main thesis reports and SVG diagrams
+├── references/                            # Clutter-free reference research papers and slides
+└── README.md                              # Main project documentation
 ```
 
 ---
 
-## 📝 Citation & Research Context
+## 👥 Contributors
 
-Developed as part of CSE 299 (Group 4) research project exploring few-shot visual classification in agricultural domains. If you reference this work, please use the following citation:
-
-```
-CSE 299 Group 4. "Leaf Disease Detection using Few-Shot Learning." 2026.
-```
+*   **CSE 299 Group 4 Research Team** (Md. Tasnimul Hasan, Tashin Mahmud Khan, and colleagues).
